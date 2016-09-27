@@ -16,15 +16,10 @@ def get_chord(modifiers):
     # bits 1 and 0 are the next two strings for adding stuff
     #   to the major or minor triad
     return [
-        (0, 4, 7),        # major triad (these first two should never happen)
-        (0, 4, 7, 10),    # major triad dominant 7th
+        (0, 4, 7),        # major triad
         (0, 3, 7),        # minor triad
+        (0, 4, 7, 10),    # major triad dominant 7th
         (0, 3, 7, 10),    # minor with dominant 7th
-
-        (0, 4, 7),        # major triad
-        (0, 4, 7, 10),    # dominant 7th
-        (0, 4, 7),        # major triad
-        (0, 4, 7, 10),    # dominant 7th
     ][modifiers]
 
 def pick_seven(offset, chord):
@@ -54,7 +49,7 @@ def pick_seven(offset, chord):
 # Put the middle string as close as possible to middle C.
 # Build a lookup table for sets of string pitch assignments.
 lst = []
-for modifiers in range(8):
+for modifiers in range(4):
     for i in circle_of_fifths:
         lst += transpose(60, pick_seven(i, get_chord(modifiers)))
 

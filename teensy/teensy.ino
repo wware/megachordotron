@@ -8,8 +8,6 @@
 extern unsigned char chord_table[];
 
 #include "keys.h"
-#define _DEMO_MODE 0
-#define _HACK 0
 
 // Something is wonky about the eight high-numbered key connections
 // on this PC board, probably some kind of assembly error, but the
@@ -146,16 +144,6 @@ public:
     }
 };
 
-class HackKey : public Key
-{
-public:
-    HackKey(uint32_t _id) : Key(_id) {}
-
-    void keydown(void) {
-        flash_int(id + 1);
-    }
-};
-
 class StringKey : public Key
 {
 public:
@@ -203,24 +191,18 @@ void setup() {
     pinMode(22, OUTPUT);
     pinMode(23, OUTPUT);
 
-#if _HACK
-    for (i = 0; i < NUM_KEYS; i++) {
-        keyboard[i] = new HackKey(i);
-    }
-#else
     for (i = 0; i < NUM_KEYS; i++) {
         if (i < 7)
             keyboard[i] = new StringKey(i);
         else
             keyboard[i] = new Key(i);
     }
-#endif
 
     for (i = 7; i < 19; i++)
         chord_base_select.add(keyboard[i]);
-    chord_modifier_group.add(keyboard[19]);
-    chord_modifier_group.add(keyboard[20]);
-    for (i = 22; i < 30; i++)
+    for ( ; i < 22; i++)
+        chord_modifier_group.add(keyboard[i]);
+    for ( ; i < 30; i++)
         program_select.add(keyboard[i]);
 
     for (i = 0; i < NUM_KEYS; i++) {
@@ -240,49 +222,8 @@ void setup() {
     }
 }
 
-int chords[4][6] = {
-    { 60, 64, 67, 70, 72, 76 },  // C major with B flat
-    { 60, 65, 69, 72, 77, 81 },   // F major
-    { 62, 65, 67, 71, 74, 77 },   // G major with F
-    { 60, 64, 67, 72, 76, 79 }    // C major
-};
-
 void loop(void) {
     int i;
-#if _DEMO_MODE
-    static int j = 0;
-
-    delayMicroseconds(500000);
-
-    switch (j) {
-    case 0:
-        usbMIDI.sendProgramChange(NYLON_GUITAR, 1);
-        break;
-    case 1:
-        usbMIDI.sendProgramChange(CELESTA, 1);
-        break;
-    case 2:
-        usbMIDI.sendProgramChange(TRUMPET, 1);
-        break;
-    case 3:
-        usbMIDI.sendProgramChange(FLUTE, 1);
-        break;
-    }
-
-    for (i = 0; i < 6; i++) {
-        usbMIDI.sendNoteOn(chords[j][i] - 12, 127, 1);
-        delayMicroseconds(100000);
-    }
-    delayMicroseconds(50000);
-    for (i = 0; i < 6; i++) {
-        usbMIDI.sendNoteOff(chords[j][i] - 12, 0, 1);
-        delayMicroseconds(100000);
-    }
-
-    j = (j + 1) % 4;
-    if (j == 0) delayMicroseconds(500000);
-#else
-    static uint8_t add_seventh = 0;
 
     for (i = 7; i < NUM_KEYS; i++)
         keyboard[i]->check();
@@ -295,19 +236,40 @@ void loop(void) {
     int8_t cmg = chord_modifier_group.any_pressed();
     int8_t ps = program_select.any_pressed();
 
-    if (cmg) {
-        if (!chord_modifier_group.previous_pressed())
-            add_seventh = 0;
-        else if (keyboard[21]->state)
-            add_seventh = 1;
+    /*
+     * 1 means major, 2 means minor, 4 means maj7, 6 means min7.
+     * The value ends up always being even so we can right-shift
+     * and use a smaller lookup table.
+     */
+    static int8_t modifier = 1;
+
+    switch (chord_modifier_group.value()) {
+        default:
+        case 0:
+        case 3:
+        case 5:
+        case 7:
+            break;
+        case 1:
+            modifier = 1;
+            break;
+        case 2:
+            if (modifier != 6)
+                modifier = 2;
+            break;
+        case 4:
+            if (modifier != 6)
+                modifier = 4;
+            break;
+        case 6:
+            modifier = 6;
+            break;
     }
 
     if (cbs || cmg) {
         uint8_t *new_chord_pointer = &chord_table[
             7 * (
-                12 * ((chord_modifier_group.value() << 1) +
-                    (add_seventh ? 1 : 0)) +
-                chord_base_select.value()
+                12 * (modifier >> 1) + chord_base_select.value()
             )
         ];
 
@@ -340,5 +302,4 @@ void loop(void) {
 
     for (i = 0; i < 7; i++)
         keyboard[i]->check();
-#endif
 }
