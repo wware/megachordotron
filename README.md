@@ -1,6 +1,22 @@
 The Megachordotron
 ====
 
+The Megachordotron is a MIDI controller organized around simple chords. It's
+intended for people (like myself) who are too clumsy to play a guitar.
+
+![A picture of the Megachordotron](/megachordotron_midi_ctrlr.jpg?raw=true "A picture of the Megachordotron")
+
+Since it's just a MIDI controller, it needs a MIDI synthesizer to work. The
+synthesizer is the PC on this little rack, which is a Linux Mint box running
+Fluidsynth. There is also a guitar amp and a keyboard and monitor.
+
+![The MIDI synth as of 10/1/2016](/midi_synth.jpg?raw=true "The MIDI synth as of 10/1/2016")
+
+After Maker Faire is over, I want to spend some time making the synth much less
+cumbersome. As it stands it is quite inconvenient.
+
+BTW, the shortened URL for this repository is https://git.io/vPt04.
+
 Printed circuit boards
 ----
 
