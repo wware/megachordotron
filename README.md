@@ -7,6 +7,8 @@ organized around simple
 [chords](https://en.wikipedia.org/wiki/Chord_(music)). It's
 intended for people (like myself) who are too clumsy to play a guitar.
 
+[![A demonstration](https://img.youtube.com/vi/67fjFGl2Ubo/0.jpg)](https://www.youtube.com/watch?v=67fjFGl2Ubo)
+
 ![A picture of the Megachordotron](/megachordotron_midi_ctrlr.jpg?raw=true "A picture of the Megachordotron")
 
 Since it's just a MIDI controller, it needs a
